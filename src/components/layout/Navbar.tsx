@@ -68,7 +68,7 @@ const Navbar = ({
   },
   menu = [
     { title: "Home", url: "/" },
-   
+
     {
       title: "Blogs",
       url: "/blogs",
@@ -76,6 +76,10 @@ const Navbar = ({
     {
       title: "About",
       url: "/about",
+    },
+    {
+      title: "Dashboard",
+      url: "/dashboard",
     },
   ],
   auth = {
@@ -133,7 +137,6 @@ const Navbar = ({
             </a>
             <Sheet>
               <SheetTrigger asChild>
-           
                 <Button variant="outline" size="icon">
                   <Menu className="size-4" />
                 </Button>
@@ -179,11 +182,12 @@ const Navbar = ({
 };
 
 const renderMenuItem = (item: MenuItem) => {
-  
+  if (!item.url) return null;
 
   return (
     <NavigationMenuItem key={item.title}>
-      <NavigationMenuLink asChild
+      <NavigationMenuLink
+        asChild
         className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground"
       >
         <Link href={item.url}>{item.title}</Link>
@@ -193,15 +197,11 @@ const renderMenuItem = (item: MenuItem) => {
 };
 
 const renderMobileMenuItem = (item: MenuItem) => {
-  
-
   return (
     <Link key={item.title} href={item.url} className="text-md font-semibold">
       {item.title}
     </Link>
   );
 };
-
-
 
 export { Navbar };
