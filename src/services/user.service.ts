@@ -8,7 +8,7 @@ export const userService = {
   getSession: async function () {
     try{
      const cookieStore = await cookies();
-    console.log(cookieStore.get("better-auth.session_token"));
+    // console.log(cookieStore.get("better-auth.session_token"));
     const res = await fetch(`${AUTH_API}/get-session`, {
       headers: {
         Cookie: cookieStore.toString(),
