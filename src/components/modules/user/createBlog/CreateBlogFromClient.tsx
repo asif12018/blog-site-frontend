@@ -1,4 +1,7 @@
 "use client";
+
+
+import { createBlogPost } from "@/app/actions/blog.action";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,62 +12,76 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Field as UIField,
+  Field,
+  FieldError,
   FieldGroup,
   FieldLabel,
-  FieldError,
 } from "@/components/ui/field";
-
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
-
-import { Field, useForm } from "@tanstack/react-form";
-import { useRouter } from "next/navigation";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
-import * as z from "zod";
-
-const formSchema = z.object({
-  name: z.string().min(1, "This field is required"),
-  email: z.email(),
-  password: z.string().min(8, "minimum length is 8"),
+const blogSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Title must be at least 3 characters")
+    .max(200, "Title must be less than 200 characters"),
+  content: z
+    .string()
+    .min(10, "Content must be at least 10 characters")
+    .max(5000, "Content must be less than 5000 characters"),
+  tags: z.string(),
 });
 
-export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
-  const router = useRouter();
+export function CreateBlogFormClient() {
   const form = useForm({
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
+      title: "",
+      content: "",
+      tags: "",
     },
     validators: {
-      onSubmit: formSchema,
+      onSubmit: blogSchema,
     },
-    onSubmit: async ({value}) => {
-      const toastId = toast("creating user");
-      try{
-         
-         const {error} = await authClient.signUp.email(value);
-         if(error){
-           toast.error(error.message, {id: toastId});
-           return
-         }
-         toast.success("User created successfully",{id: toastId});
-         router.push("/");
-      }catch(err){
-        toast.error("Internal server Error", {id: toastId});
+    onSubmit: async ({ value }) => {
+      const toastId = toast.loading("Creating....");
+
+      const blogData = {
+        title: value.title,
+        content: value.content,
+        tags: value.tags
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item !== ""),
+      };
+
+    //   console.log(blogData);
+
+      try {
+
+        //post logic here
+
+        const res = await createBlogPost(blogData);
+        
+        if (res.error) {
+          toast.error(res.error.message, { id: toastId });
+          return;
+        }
+
+        toast.success("Post Created", { id: toastId });
+        console.log(res);
+        
+      } catch (err) {
+        toast.error("Something Went Wrong", { id: toastId });
+       
       }
     },
   });
-    const handleGoogleLogin = async() =>{
-    const data = await authClient.signIn.social({
-    provider: "google",
-    callbackURL:"http://localhost:3000",
-  });
-  }
+
   return (
-    <Card {...props}>
+    <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>Create an account</CardTitle>
         <CardDescription>
@@ -73,7 +90,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       </CardHeader>
       <CardContent>
         <form
-          id="login-form"
+          id="blog-post"
           onSubmit={(e) => {
             e.preventDefault();
             form.handleSubmit();
@@ -81,85 +98,82 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         >
           <FieldGroup>
             <form.Field
-              name="name"
+              name="title"
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <UIField >
-                    <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Title</FieldLabel>
                     <Input
                       type="text"
                       id={field.name}
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                    ></Input>
+                      placeholder="Blog Title"
+                    />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
-                  </UIField>
+                  </Field>
                 );
               }}
             />
-
             <form.Field
-              name="email"
+              name="content"
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <UIField >
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                    <Input
-                      type="email"
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Content</FieldLabel>
+                    <Textarea
                       id={field.name}
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                    ></Input>
+                      placeholder="Write your blog"
+                    />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
-                  </UIField>
+                  </Field>
                 );
               }}
             />
-
             <form.Field
-              name="password"
+              name="tags"
               children={(field) => {
-                 const isInvalid =
-          field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <UIField>
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Tags (comma separated)
+                    </FieldLabel>
                     <Input
-                      type="password"
+                      type="text"
                       id={field.name}
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                    ></Input>
+                      placeholder="nextjs, web"
+                    />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
-                  </UIField>
+                  </Field>
                 );
               }}
             />
           </FieldGroup>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button form="login-form" type="submit" className="w-full cursor-pointer">
-          Register
+      <CardFooter className="flex flex-col">
+        <Button form="blog-post" type="submit" className="w-full">
+          Submit
         </Button>
-      </CardFooter>
-      <CardFooter className="flex justify-end ">
-        <Button className="w-full" onClick={()=>handleGoogleLogin()} variant="outline" type="button">
-                  Continue with Google
-                </Button>
       </CardFooter>
     </Card>
   );

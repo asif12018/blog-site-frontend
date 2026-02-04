@@ -16,6 +16,7 @@ import Link from "next/link";
 import { adminRoutes } from './../../routes/adminRoutes';
 import { userRoutes } from "@/routes/userRoutes";
 import { IRoute } from "@/types";
+import { Roles } from "@/app/constants/roles";
 
 
 // This is sample data.
@@ -42,10 +43,10 @@ import { IRoute } from "@/types";
 export function AppSidebar({user, ...props }: {user: {role: string} & React.ComponentProps<typeof Sidebar>}) {
   let routes: IRoute[] = [];
   switch (user.role){
-    case "admin":
+    case Roles.admin:
       routes = adminRoutes;
       break;
-    case "user":
+    case Roles.user:
       routes = userRoutes;
       break;
     default:

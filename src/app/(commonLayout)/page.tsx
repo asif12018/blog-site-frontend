@@ -1,7 +1,7 @@
 
-import { Button } from '@/components/ui/button';
+import BlogCard from '@/components/homepage/BlogCard';
 import { blogService } from '@/services/blog.service';
-import { userService } from '@/services/user.service';
+import { BlogPost } from '@/types/blog.type';
 
 
 
@@ -14,10 +14,12 @@ export default async function Home() {
   }, {
     cache:"no-store"
   });
-  console.log('blog-data',data)
+  // console.log('blog-data',data.data.data)
   return (
-    <div>
-      <Button variant="outline">Click here</Button>
+    <div className='grid grid-cols-3 max-w-7xl mx-auto px-4 gap-6'>
+      {data?.data?.data.map((post: BlogPost)=>{
+        return <BlogCard key={post.id} post={post}></BlogCard>
+      })}
     </div>
   );
 }

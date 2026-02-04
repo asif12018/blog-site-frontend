@@ -6,7 +6,11 @@ export const userRoutes: IRoute[] = [
       items: [
         {
           title: "Create Blog",
-          url: "/create-blog",
+          url: "/dashboard/create-blog",
+        },
+        {
+          title: "History",
+          url:"/dashboard/history"
         }
       ],
     },
